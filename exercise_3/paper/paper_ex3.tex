@@ -51,16 +51,16 @@
     The aim of this project is to extract several models by using different model-stealing methods. Moreover, we will test their efficiency and accuracy and compare their performance to the performance of the underlying original model.
     
 \section{Copycat Networks for CNN}\label{sec:copycat}
-    This model stealing attack was proposed by Correia-Silva et al.~\cite{copycat} and aims to copy a Convolutional Neural Network. First, we will use the target CNN as a black-box to label our training set, which can also contain instances from the non-problem domain if the model allows us to classify them. For example the Microsoft Azure Emotion API does not allow to upload instances, where it cannot detect a face, hence which are not part of the problem-domain. Even images containing a face can sometimes be rejected as the API could not always detect a face. By classifying the data we create a fake dataset which will be used to train the extracted model.
+    This model stealing attack was proposed by Correia-Silva et al.~\cite{copycat} and aims to copy a Convolutional Neural Network. First, we will use the target CNN as a black-box to label our training set, which can also contain instances from the non-problem domain if the model allows us to classify them. For example the Microsoft Azure Emotion API does not allow to upload instances, where it cannot detect a face, hence which are not part of the problem-domain. Even images containing a face can sometimes be rejected as the Azure API could not always detect a face. By classifying the data using the target network as black-box we create a fake data set which will be used to train the extracted model.
     
     Next, we will select a model architecture of the copycat network. A possible problem with this approach is that we might not know the model architecture of the original network. However, this should not be a big problem as the knowledge can be copied to a different model.
     As pre-trained models tend to perform better, we will use the VGG-16 architecture with pre-trained weights. It is obviously optimal if the pre-trained model is already close to the problem domain.
     
-    In the next step we will use the generated data set to fit the pre-trained model.
+    In the next step we will use the generated fake data set to fit the pre-trained model.
     As described in~\cite{copycat} we will use Stochastic Gradient Descent with a Step Down policy for the learning rate for training the copycat model. 
     
     \subsection{First Data Set}
-        Unfortunately, we could not get access to the data sets used in~\cite{copycat} to compare our results to the results in the paper. Therefore, we used other data sets for our experiments. We combined two sets, which are described in the following two subsections, to obtain a larger number of instances.
+        Unfortunately, we could not get access to the data sets used in~\cite{copycat} to compare our results with the results in the paper. Therefore, we used other data sets for our experiments. We combined two sets, which are described in the following two subsections to obtain a larger number of instances.
         %As our first data set we combined the data sets described in the following two subsections. 
         %Since KDEF and AKDEF were one of the used data sets in the paper of Correia-Silva et al. we wanted to take them as validation that we achieve similar results. Unfortunately, they contain only about 5\,000 samples in total and we could not get access to other data sets used in the paper. Therefore, we combined them with a larger data set.
         
@@ -148,7 +148,8 @@
             \caption{Performance of Copycat Attack on first data set}
             \label{fig:performance-azure}
         \end{figure}
-    The training of the biggest copied model took only roughly one hour, including the time needed to question the Azure API on the labeling of our data set. This was in part to the offer allowing students to get $100$\$ of credit for free and therefore letting us to label $10$ images per second. Had we used the free tier we would have needed roughly $16$ hours of time which is still a reasonable timeframe.
+        The training of the biggest extracted model took only roughly one hour, including the time needed to question the Azure API on the labeling of our data set. This was in part to the offer allowing students to get $100$\$ of credit for free and therefore letting us to label $10$ images per second. Had we used the free tier we would have needed roughly $16$ hours of time which is still a reasonable timeframe.
+    
     \subsection{Second Data Set}
         In the following problem, we want to predict if a certain image contains a cat, a dog or none of them. 
         
@@ -166,11 +167,32 @@
             
         
      \subsection{Dogs vs. Cats}
-            For the second attempt we chose to train our own CNN to steal to make matters more interesting. We trained our model using the following competition data set from \hyperlink{https://www.kaggle.com/c/dogs-vs-cats/data}{Kaggle}. 
+            For the second attempt we chose to train our own CNN to steal to make matters more interesting. We trained our model using the following competition data set from \hyperlink{https://www.kaggle.com/c/dogs-vs-cats/data}{Kaggle}. We trained it using the training set containing $25\,000$ images of cats and dogs. 
+            
+            We tested the accuracy of the set by mixing the cat data set and the Stanford dog data set and picking $7\,644$ random images out of it. The resulting accuracy was $0\,821$.
+    \subsection{Evaluation 2}
+    We extracted the model in two different ways. In one instance we used only images that are part of the domain, therefore pictures of cats and dogs, in the attack set. In the other instance we used a mixture of non-domain images and domain images in a $2$ to $5$ ratio, to let the original model confess its information. 
+    
+    We start by looking at the accuracy of the extracted model in both cases:
+            \begin{figure}[h!]
+            \centering
+            \begin{subfigure}[c]{0.49\textwidth}
+                \centering
+                \includegraphics[width=1\textwidth]{exercise_3/paper/images/accuracy_copy_cat.png}
+                \caption{Accuracy using only problem domain}
+                \label{fig:Accuracy_Azure}
+            \end{subfigure}
+            \begin{subfigure}[c]{0.49\textwidth}
+                \centering
+                \includegraphics[width=1\textwidth]{exercise_3/paper/images/equality_copy_cat_.png}
+                \caption{Accuracy using mixed instances }
+                \label{fig:Equality_Azure}
+            \end{subfigure}
+            \caption{Performance of Copycat Attack on first data set}
+            \label{fig:performance-azure}
+        \end{figure}
+
 \section{last classifier}
-
-
-
 \section{Conclusions}
 
 \bibliographystyle{abbrv}
