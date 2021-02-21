@@ -59,7 +59,10 @@
     In the next step we will use the generated fake data set to fit the pre-trained model.
     As described in~\cite{copycat} we will use Stochastic Gradient Descent with a Step Down policy for the learning rate for training the copycat model. 
     
-    \subsection{First Data Set}
+    We carried out our experiments using an Intel Core i7 6700k with 16GB RAM and NVIDIA GeForce GTX 1070. The environment of the experiments was Arch Linux with NVIDIA CUDA Framework ... and cuDNN .... \todo{!}
+    %Paper: Intel Core i5-7500 3.40GHz with 32GiB of RAM and NVIDIA GeForce GTX 1070 with 8GiB of memory. The environment of the experiments was GNU/Linux Mint 18.1, with NVIDIA CUDA Framework 9.0 and cuDNN 7.0
+    
+    \subsection{Data Set: Emotion Detection}
         Unfortunately, we could not get access to the data sets used in~\cite{copycat} to compare our results with the results in the paper. Therefore, we used other data sets for our experiments. We combined two sets, which are described in the following two subsections to obtain a larger number of instances.
         %As our first data set we combined the data sets described in the following two subsections. 
         %Since KDEF and AKDEF were one of the used data sets in the paper of Correia-Silva et al. we wanted to take them as validation that we achieve similar results. Unfortunately, they contain only about 5\,000 samples in total and we could not get access to other data sets used in the paper. Therefore, we combined them with a larger data set.
@@ -103,18 +106,36 @@
                     \label{fig:happy_face}
             \end{figure}
         
-        In the Microsoft Azure Emotion API there is a free pricing option which allows us to submit up to 20 images per minute as well as a premium plan with up to 10 calls per second. As Microsoft has a promotion for students, which gives 100€ free credit, we chose the premium plan. %which allows us to submit up to 10 images per second.
+        In the Microsoft Azure Emotion API there is a free pricing option which allows us to submit up to 20 images per minute as well as a standard plan with up to 10 calls per second. As Microsoft has a promotion for students, which gives 100€ free credit, we chose the premium plan. %which allows us to submit up to 10 images per second.
         
         We decided to steal the model behind this API because this is also considered in the paper by Correia-Silva et al.~\cite{copycat}. Hence, we are able to assess whether the performance of our extracted classifier is similar to the performance of the extracted classifier in the paper.
         
-       As mentioned in the beginning of Section~\ref{sec:copycat} Azure could not recognise all of the faces in our data set and hence could not classify for each face an emotion. Therefore, we added to the 8 emotions a further class called 'no\textunderscore face'.
+       As mentioned in the beginning of Section~\ref{sec:copycat} Azure could not recognise all of the faces in our data set and hence could not classify for each face an emotion. Therefore, we added to the 8 emotions a further class called 'no\textunderscore face'. Figure~\ref{subfig:emotions_original-labels} shows the proportion of the different classes in our data set. In Figure~\ref{subfig:emotions_azure-labels} the distribution after classification by Azure. As one can see Azure could not detect about $13\%$ of the human faces.
+       
+       \begin{figure}[h!]
+            \centering
+            \begin{subfigure}[c]{0.45\textwidth}
+                \centering
+                \includegraphics[width=0.95\textwidth]{exercise_3/paper/images/emotions_original-labels.png}
+                \caption{Class Distribution}
+                \label{subfig:emotions_original-labels}
+            \end{subfigure}
+            \begin{subfigure}[c]{0.45\textwidth}
+                \centering
+                \includegraphics[width=0.95\textwidth]{exercise_3/paper/images/emotions_azure-labels.png}
+                \caption{Classification of Azure}
+                \label{subfig:emotions_azure-labels}
+            \end{subfigure}
+            \caption{Performance of Copycat Attack on first data set}
+            \label{fig:emotions_distribution-labels}
+        \end{figure}
         
         %Originally, we wanted to add instances, which are not part of the problem domain to our fake data set. However, as Azure does not classify images in which it does not detect any face, this was not possible.
         
-    \subsection{Evaluation 1}
+    \subsection{Evaluation of the extracted Emotion Detection model}
         Since we had labeled data, we were able to compute the accuracy of the Microsoft Azure Emotion API. On the whole data set we obtained an accuracy of $0.76$.
         
-        For testing the efficiency of our extracted model, we initially did a $75\%/25\%$ training/test split on our data set consisting of KDEF, AKDEF and the one from Kaggle. As we had labeled data, we had to delete the labels before querying the Azure API as a black-box. From now on we will refer to the training set as attack set, since this set will be used to attack the target network.
+        For testing the efficiency of our extracted model, we initially did a $75\%/25\%$ training/test split on our data set consisting of KDEF, AKDEF and the one from Kaggle. As we had labeled data, we had to delete the labels before querying the Azure API as a black-box. From now on we will refer to the split for training the extracted model as attack set, since this set will be used to attack the target network.
         
         To learn the effect of the number if images in the training set, we used an incremental approach. We trained the model on progressively larger subsets of the training set, which were included in each other. Starting with a random sample $s_0$ of $2\,000$ images, the next training set $s_n$ consisted of $s_{n-1}$ and additional $1\,000$ images.
         
@@ -148,52 +169,110 @@
             \caption{Performance of Copycat Attack on first data set}
             \label{fig:performance-azure}
         \end{figure}
-        The training of the biggest extracted model took only roughly one hour, including the time needed to question the Azure API on the labeling of our data set. This was in part to the offer allowing students to get $100$\$ of credit for free and therefore letting us to label $10$ images per second. Had we used the free tier we would have needed roughly $16$ hours of time which is still a reasonable timeframe.
-    
-    \subsection{Second Data Set}
-        In the following problem, we want to predict if a certain image contains a cat, a dog or none of them. 
+        
+        We took the offer for students and got $100$\$ of credit for free, which we used for the standard option. Therefore, we could label up to $10$ images per second. 
+        
+        Extracting a model using the whole data set took roughly one hour. About a third of this time was needed for training the model. The remaining time was for querying our target network for the labeling of our data set. 
+        
+        Using the free tier in Azure we would have needed about $16$ hours of time which is compared to the standard tier much longer, but still a reasonable timeframe. 
+
+    \subsection{Data Set: Cats vs. Dogs}
+        In the following we have a binary classification problem, where we want to predict if a certain image contains a cat or a dog. 
         
         For building a model we will again combine several data sets. First of all, we need a training set for training the target network. Additionally, we will need images for the attack resp. test set. 
         
-        \subsubsection{Cat data set}
-            %https://www.kaggle.com/crawford/cat-dataset 9000 Bilder 
-            This data set taken from \hyperlink{https://archive.org/details/CAT_DATASET}{archive.org} contains roughly $10\,000$ images of cats in various positions. Additionally pointers to the eyes, ears and nose of the cats were given, however we did not use them in any capacity. 
+        \subsubsection{Dogs vs. Cats}
+            Instead of using an already existing API, in this experiment we chose to train our own CNN to steal to make matters more interesting. We obtained the training set for building our target model from the Kaggle competition 'Dogs vs. Cats'~\cite{dogs-cats}. It contains $25\,000$ images of cats and dogs including its labels.
             
-        \subsubsection{Stanford dogs data set }
-            The data set was built using images from ImageNet, by \hyperlink{http://vision.stanford.edu/aditya86/ImageNetDogs/}{Stanford university} , in order to help categorize images. It contains $20\,580$ pictures of dogs. It theoretically contains classifications for different breeds of dogs, but once again we did not use this.
+            Additionally, this Kaggle competition provided another data set with $12\,500$ pictures of cats and dogs, but without labels, as the goal of the competition was to predict these labels. Since the attack set does not need any labeled data, we decided to use this set as part of the attack set.
+            
+        \subsubsection{Cats}
+            This data set is also from Kaggle~\cite{cats}. It contains roughly $10\,000$ images solely of cats in various positions. 
+            In an additional file more information, like pointers to the eyes, ears and nose of the cats in the pictures, can be found. However we did not use them in any capacity. 
+            
+            We used this data set as part of the attack and test set. 
+            
+        \subsubsection{Stanford dogs data set}
+            The Stanford dogs data set ~\cite{dogs} was built using images from ImageNet in order to help categorize images. It contains $20\,580$ pictures purely of dogs. Additionally, it contains also classification for different breeds of dogs, but once again we did not use this information in out attack. 
+            
+            In our experiment this data set was used in the attack and test set.
             
         \subsubsection{Common objects in context data set}
-            Since our model for this exercise was homemade, we could use copy-cat to it's full power and include non-domain data in our training set for our copy-cat model. For this we chose a dataset from \hyperlink{https://cocodataset.org/\#download}{Common objects in context} containing $118\,000$ images of trains.
+            Since we construct the target network in this experiment by ourselves, we can use the copycat attack to it's full power and include non-problem domain data in our attack set. 
+            For this we chose the COCO (Common Objects in Context) data set~\cite{coco}, which is known for object detection, segmentation and captioning. With a size of about $118\,000$ images it is a large data set. 
             
+            These images will only be used in the attack set, since the classification problem is to decide if a picture shows a dog or a cat, but not to decide if it is something else. Moreover, since the images in this data set do not contain to our problem domain and compared to the number of our problem-domain data is much bigger, we decided not to use the whole data set. 
+            
+    \subsection{Evaluation of the extracted Cats vs. Dogs model}
+        We tested the accuracy of the set by mixing the cat data set and the Stanford dog data set and picking $7\,644$ random images out of it. The resulting accuracy was $0,821$.
         
-     \subsection{Dogs vs. Cats}
-            For the second attempt we chose to train our own CNN to steal to make matters more interesting. We trained our model using the following competition data set from \hyperlink{https://www.kaggle.com/c/dogs-vs-cats/data}{Kaggle}. We trained it using the training set containing $25\,000$ images of cats and dogs. 
-            
-            We tested the accuracy of the set by mixing the cat data set and the Stanford dog data set and picking $7\,644$ random images out of it. The resulting accuracy was $0\,821$.
-    \subsection{Evaluation 2}
-    We extracted the model in two different ways. In one instance we used only images that are part of the domain, therefore pictures of cats and dogs, in the attack set. In the other instance we used a mixture of non-domain images and domain images in a $2$ to $5$ ratio, to let the original model confess its information. 
+        -------------------------------------------------------------------
+        
+        We extracted the model in two different ways. In one instance we used only images that are part of the domain, therefore pictures of cats and dogs, in the attack set. In the other instance we used a mixture of non-domain images and domain images in a $2$ to $5$ ratio, to let the original model confess its information. 
     
-    We start by looking at the accuracy of the extracted model in both cases:
+        We start by looking at the accuracy of the extracted model in both cases:
             \begin{figure}[h!]
             \centering
             \begin{subfigure}[c]{0.49\textwidth}
                 \centering
-                \includegraphics[width=1\textwidth]{exercise_3/paper/images/accuracy_copy_cat.png}
+                \includegraphics[width=1\textwidth]{exercise_3/paper/images/Accuracy_copy_cat_domain.png}
                 \caption{Accuracy using only problem domain}
-                \label{fig:Accuracy_Azure}
+                \label{fig:Accuracy_Cat_domain}
             \end{subfigure}
             \begin{subfigure}[c]{0.49\textwidth}
                 \centering
-                \includegraphics[width=1\textwidth]{exercise_3/paper/images/equality_copy_cat_.png}
+                \includegraphics[width=1\textwidth]{exercise_3/paper/images/Accuracy_copy_cat.png}
                 \caption{Accuracy using mixed instances }
-                \label{fig:Equality_Azure}
+                \label{fig:Accuracy_cat_mix}
             \end{subfigure}
-            \caption{Performance of Copycat Attack on first data set}
-            \label{fig:performance-azure}
+            \caption{Accuracy of Copycat Attack on second data set}
+            \label{fig:accuracy_cat}
         \end{figure}
+        It is visible, that in case of the attack set being of similar size the attack set consisting only of instances, that are part of the problem domain performed better. 
 
-\section{last classifier}
+        Looking at how much of the data our extracted model labeled the same as the original model, showed the same:
+         \begin{figure}[h!]
+            \centering
+            \begin{subfigure}[c]{0.49\textwidth}
+                \centering
+                \includegraphics[width=1\textwidth]{exercise_3/paper/images/Equality_copy_cat_domain.png}
+                \caption{Equality using only problem domain}
+                \label{fig:Equality_cat_domain}
+            \end{subfigure}
+            \begin{subfigure}[c]{0.49\textwidth}
+                \centering
+                \includegraphics[width=1\textwidth]{exercise_3/paper/images/Equality_copy_cat.png}
+                \caption{Equality using mixed instances}
+                \label{fig:Equality_cat_mix}
+            \end{subfigure}
+            \caption{Equality of Copycat Attack on second data set}
+            \label{fig:equality_cat}
+        \end{figure}
+    Once again using only problem domain data performed better, when looking at attack sets of similar size.
+    
+    The time needed to train the models grew roughly linearly with the size of the attack sets. The largest attack set of size $94\,572$ trained the extracted model in roughly $24$ minutes. Below is the time needed to construct the extracted model compared to the size of the attack set.
+        \begin{figure}[h!]
+            \centering      \includegraphics[scale=0.2]{exercise_3/paper/images/Time_copy_cat.png}
+            \caption{Time needed to extract a model}
+            \label{fig:time_cat}
+        \end{figure}
+            
+\section{Decision Tree Path-Finding Attack}
+    As the name suggests, this model extraction method targets decision tree models. Such a model divides the input space into several discrete partitions. The idea behind the decision tree path-finding attack is to vary the values of each feature bit by bit to find the value at which the tree splits.
+    
+    
+    
+    We carried out our experiments using GCP e2-highmem-16 offered by the Google Cloud Platform running on Ubuntu 20.04.
+    
+    \subsection{Data Set}
+        ...
+        
+    \subsection{Evaluation}
+        ...
+
 \section{Conclusions}
+    The copy-cat method in general performed extremely well, getting an equality of roughly $0,7$ even on the rather complex Microsoft Azure emotional API in less than one hour and using a rather small attack set. While using only instances that are part of the problem domain worked better on similar attack set sizes, finding instances that are not part of the problem domain is an easier task in general and still works pretty well. Taking this into consideration, in case that the number of queries on can make to the blackbox is severely limited or run time is an important factor, one should rely mainly on problem domain instances. Should this not be the case non-problem domain instances allow for a quick assembly of a large data set that can extract a model reasonably well.
+
 
 \bibliographystyle{abbrv}
 \bibliography{literature}
