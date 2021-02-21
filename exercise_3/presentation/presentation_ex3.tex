@@ -39,6 +39,7 @@
 \begin{itemize}
     \item Uses model as blackbox
     \item unlabeled images (domain + non-domain)
+    \item VGG-$16$ architecture with pre-trained weights
     \item Stochastic Gradient Descent with a Step Down policy for learning rate
 \end{itemize}
 \end{frame}
@@ -48,7 +49,7 @@
 \begin{itemize}
     \item Gives a percentage vector of emotions (Anger, Contempt, Disgust, Fear, Happiness, Neutral, Sadness, Surprise)
     \item No such vector if it doesn't recognise a face$\Rightarrow$Only domain data
-    \item Free to use but has premium plan
+    \item Free to use but has premium plan ($1$\$ for $1000$ calls) 
 \end{itemize}
 \end{frame}
 \begin{frame}[fragile]{The dataset}
@@ -56,7 +57,7 @@
 \begin{itemize}
 \item KDEF and AKDEF 
 \item Emotion Detection from Facial Expressions
-\item contains already labeled data
+\item contains already labeled data$\Rightarrow$ estimate accuracy of Azure
 \end{itemize}
 \end{minipage}
 
@@ -106,6 +107,7 @@
 \begin{frame}[fragile]{Cats and dogs Model}
 \begin{itemize}
 \item CNN home trained on $25\,000$ images
+\item $3$ convolutional layer blocks and a fully connected layer
 \item Accuracy: $0,821$
 \end{itemize}
 \end{frame}
@@ -154,5 +156,6 @@
         \label{fig:time_cat}
     \end{figure}
 \end{frame}
-
+\section{Decision Tree Path-Finding Attack}
+\section{Conclusions}
 \end{document}

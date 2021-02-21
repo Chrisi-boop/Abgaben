@@ -39,6 +39,10 @@
 \setlength{\headheight}{15pt}
 \setlength{\footheight}{29pt}
 
+%%%%%%%% Biblatex
+\usepackage[backend=biber,style=numeric,sortlocale=de_DE,natbib=true,url=false, doi=true,eprint=false]{biblatex}
+\addbibresource{literature.bib}
+
 \begin{document}
 \maketitle
 
@@ -109,7 +113,7 @@
         
         We decided to steal the model behind this API because this is also considered in the paper by Correia-Silva et al.~\cite{copycat}. Hence, we are able to assess whether the performance of our extracted classifier is similar to the performance of the extracted classifier in the paper.
         
-       As mentioned in the beginning of Section~\ref{sec:copycat} Azure could not recognise all of the faces in our data set and hence could not classify for each face an emotion. Therefore, we added to the 8 emotions a further class called 'no\textunderscore face'. Figure~\ref{subfig:emotions_original-labels} shows the proportion of the different classes in our data set. In Figure~\ref{subfig:emotions_azure-labels} the distribution after classification by Azure. As one can see Azure could not detect about $13\%$ of the human faces.
+       As mentioned in the beginning of Section~\ref{sec:copycat} Azure could not recognise all of the faces in our data set and hence could not classify for each face an emotion. Therefore, we added to the 8 emotions a further class called 'no\textunderscore face'. Figure~\ref{subfig:emotions_original-labels} shows the proportion of the different classes in our data set. In Figure~\ref{subfig:emotions_azure-labels} the distribution after classification by Azure. As one can see Azure could not detect about $13\%$ of the human faces. We only performed a copycat attack with a problem domain dataset for this reason, since the Azure Emotion API in the current version does not allow us to extract emotions for images without an detected face.
        
        \begin{figure}[h!]
             \centering
@@ -129,8 +133,7 @@
             \label{fig:emotions_distribution-labels}
         \end{figure}
         
-        %Originally, we wanted to add instances, which are not part of the problem domain to our fake data set. However, as Azure does not classify images in which it does not detect any face, this was not possible.
-        
+
     \subsection{Evaluation of the extracted Emotion Detection model}
         Since we had labeled data, we were able to compute the accuracy of the Microsoft Azure Emotion API. On the whole data set we obtained an accuracy of $0.76$.
         
@@ -147,9 +150,9 @@
         
         %In order to compare the performance of our copied classifier to the original we split the data set into a test and training set and looked at the accuracy resp. equality of our copied model, dependant on the size of the set used to train the model. We trained the model on progressively larger subsets of the training set, which were included in each other. 
         
-        Figure~\ref{fig:performance-azure} shows the results of our tests. Overall it can be seen that the accuracy as well as the equality improve for larger training sets. The best value for the accuracy in our tests was $0.578$. which seems much better compared to the results from the paper with about $0.35$. We also computed the accuracy of the Azure Emotion API on the test set and obtained an accuracy of $0.764$.
+        Figure~\ref{fig:performance-azure} shows the results of our tests. Overall it can be seen that the accuracy as well as the equality improve for larger training sets. The best value for the accuracy in our tests was $0.578$ which seems much better compared to the results from the paper with about $0.35$ depending on the attack data set. Nevertheless, the Azure Model used in the paper (which was an older version) also had an accuracy of around $0.351$. We also computed the accuracy of the Azure Emotion API on the test set and obtained an accuracy of $0.764$, which is much better than the accuracy recorded in the paper. Therefore our performance was $0.756$ compared to the target network.
         
-        However, the extracted model using the whole training set was was able to coincide on $70\%$ on the test data. 
+        The extracted model using the whole attack set was was able to coincide on $70\%$ with the azure classifications on our test set. 
         
         \begin{figure}[h!]
             \centering
@@ -169,7 +172,7 @@
             \label{fig:performance-azure}
         \end{figure}
         
-        We took the offer for students and got $100$\$ of credit for free, which we used for the standard option. Therefore, we could label up to $10$ images per second but had to pay $0.01$\$ per $1\,000$ calls.
+        We took the offer for students and got $100$\$ of credit for free, which we used for the standard option. Therefore, we could label up to $10$ images per second but had to pay $1$\$ per $1\,000$ calls.
         
         Extracting a model using the whole data set took roughly one hour. About a third of this time was needed for training the model. The remaining time was for querying our target network for the labeling of our data set. 
         
@@ -234,6 +237,9 @@
         
         Considering the second case in Figure~\ref{fig:accuracy_cat_PD+NPD}, where also NPD data is included, we can see that this looks similar to the other approach. The accuracy increases from $0.673$ to $0.791$.
         
+        The accuracy of the target model on the same test set was $0,821$. 
+        Comparing the accuracy of the extracted models in our tests to the accuracy of the target CNN we can see that this measure is very close to the original one.
+        
         \begin{figure}[h!]
             \centering
             \begin{subfigure}[c]{0.49\textwidth}
@@ -250,7 +256,7 @@
             \label{fig:accuracy_cat}
         \end{figure}
 
-        Furthermore, we will consider the equality of our extracted model. In Figure~\ref{fig:equality_cat} we can see that graph for both approaches looks very similar.
+        Furthermore, we will consider the equality of our extracted model. In Figure~\ref{fig:equality_cat} we can see that the two graphs for both approaches look very similar. For a larger attack set the equality can be improved up to $0.864$. This means, compared to the previous Emotion Detection problem, we were able to copy the model in this setting better in these tests and on the given data.
         
          \begin{figure}[h!]
             \centering
@@ -268,26 +274,19 @@
             \label{fig:equality_cat}
         \end{figure}
         
-        It is visible, that in case of the attack set being of similar size the attack set consisting only of instances, that are part of the problem domain performed better. 
+        In addition to that, we will also look at how much time it takes to train the extracted model for an attack set of certain size. As it can be seen in Figure~\ref{fig:time_cat} the time for training the models grew roughly linear with the size of the attack set in our tests. The largest attack set containing $94\,572$ images needed about $24$ minutes to perform the attack, i.e. to build the extracted model.
         
-        Once again using only problem domain data performed better, when looking at attack sets of similar size.
-        
-                %the number of instances in the attack set has more visible influence on the accuracy of the extracted model. The accuracy increases from $0.673$ to $0.791$. 
-    
-    The time needed to train the models grew roughly linearly with the size of the attack sets. The largest attack set of size $94\,572$ trained the extracted model in roughly $24$ minutes. Below is the time needed to construct the extracted model compared to the size of the attack set.
         \begin{figure}[h!]
-            \centering      \includegraphics[width=0.6\textwidth]{exercise_3/paper/images/Time_copy_cat.png}
+            \centering      \includegraphics[width=0.65\textwidth]{exercise_3/paper/images/Time_copy_cat.png}
             \caption{Time needed to extract a model}
             \label{fig:time_cat}
         \end{figure}
         
+        Summarizing it can be said that for a fixed number of PD data, adding NPD images improves the accuracy and equality of the extracted model. But since more queries to the target network are required when adding NPD data, the time needed for building the model increases. Hence, there is a trade-off between the performance of the model and the costs.
         
-        ------------------------------------------------------------------
-        
-        We tested the accuracy of the set by mixing the cat data set and the Stanford dog data set and picking $7\,644$ random images out of it. The resulting accuracy was $0,821$. 
             
 \section{Decision Tree Path-Finding Attack}
-    As the name suggests this model stealing attack targets decision tree models. Such a model divides the input space into several discrete partitions. The idea behind the decision tree path-finding attack is to vary the values of each feature bit by bit to find the value at which the tree splits. Algorithm~\ref{alg:DT-attack} you can find a rough sketch of this attack. In this pseudocode let $Q$ be the set of unprocessed queries and $P$ the set of explored leaves with their classification.
+    As the name suggests this model stealing attack targets decision tree models. Such a model divides the input space into several discrete partitions. The idea behind the decision tree path-finding attack is to vary the values of each feature bit by bit and then to query the black-box to find the values at which the tree splits. In Algorithm~\ref{alg:DT-attack} you can find a rough sketch of this attack. In this pseudocode let $Q$ be the set of unprocessed queries and $P$ the set of explored leaves with their classification value.
     
     \begin{algorithm}
         \caption{Path-finding attack for decision trees}
@@ -301,37 +300,44 @@
 	    \end{algorithmic}
 	    \label{alg:DT-attack}
     \end{algorithm}
-    A weakness of this approach is that if two instances that lead to different leaves that are classified as the same, only differ in a single feature, the difference may not be registered in the extracted model.
+    
+    A weakness of this approach is that for two instances which e.g. only differ in a single feature, the target decision tree leads to different leaves which are classified as the same, the difference may not be registered in the extracted model.
     
     We carried out our experiments using GCP e2-highmem-16 offered by the Google Cloud Platform running on Ubuntu 20.04.
     
     \subsection{Models}
-        Since this extraction method does not use data sets to get the model to confess its knowledge, we instead look at publicly available decision tree models from bigml which we are looking to extract.
-        \subsubsection{US IRS 2008 tax data patterns}
-        https://bigml.com/user/francisco/gallery/model/50c008bb3b56351981000375
-        This decision tree was generated using data from tax returns filed in the US in 2009. The decision tree aims to predict the home state of the tax payer.
-        \subsubsection{Steak survey}
-        https://bigml.com/user/ashikiar/gallery/model/537be4c3d9949779990041e9
-        This model was based on data from a \hyperlink{https://fivethirtyeight.com/features/how-americans-like-their-steak/}{FiveThirtyEighty survey}, which asked a lot of general questions as well as how they liked their steak prepared (Rare, Medium-rare, Medium, Medium-well, Well). 
-        \subsubsection{Bitcoin price} 
-        https://bigml.com/user/czuriaga/gallery/model/51ccb90a035d07603900039e
-        Was macht der TREEEE?????
-        \subsubsection{Email Importance}
-        https://bigml.com/user/louisdorard/gallery/model/52fa8aa60c0b5e6d4a0030c1
+        Since this model stealing attack does not use attack sets to get the model (like the previous one) to confess its knowledge, we looked at publicly available decision tree models from BigML instead of data sets.
         
-        This model was built using Email data collected from the users own inbox. The importance was set by Gmail. Using a variety of features including length of the mail and whether the mail was sent by a contact, the tree classifies the importance.
+        Moreover, we decided to consider the models from the paper to find out if this model stealing attack implemented exactly as in the paper but performed in a different setting yields to exactly the same extracted model or if it leads to any differences.
+        
+        \subsubsection{US IRS 2008 tax data patterns}
+            The decision tree for US IRS 2008 tax data patterns~\cite{tax} was generated using data from tax returns filed in the US in 2008. The decision tree aims to predict the home state of the tax payer depending, e.g. on the unemployment compensation, real estate taxes or the tax due at time of filing. 
+        
+        \subsubsection{Steak survey}
+            
+            This model was based on data from a \hyperlink{https://fivethirtyeight.com/features/how-americans-like-their-steak/}{FiveThirtyEighty survey}, which asked a lot of general questions as well as how they liked their steak prepared (Rare, Medium-rare, Medium, Medium-well, Well). 
+            
+        \subsubsection{Bitcoin price} 
+            https://bigml.com/user/czuriaga/gallery/model/51ccb90a035d07603900039e
+            Was macht der TREEEE?????
+        
+        \subsubsection{Email Importance}
+            https://bigml.com/user/louisdorard/gallery/model/52fa8aa60c0b5e6d4a0030c1
+        
+            This model was built using Email data collected from the users own inbox. The importance was set by Gmail. Using a variety of features including length of the mail and whether the mail was sent by a contact, the tree classifies the importance.
+            
         \subsubsection{gss survey}
-        Find das model ned
+            Find das model ned
+            
         \subsubsection{med price}
-        Find ich ned
+            Find ich ned
+            
     \subsection{Evaluation}
         ...
 
 \section{Conclusions}
     The copy-cat method in general performed extremely well, getting an equality of roughly $0,7$ even on the rather complex Microsoft Azure emotional API in less than one hour and using a rather small attack set. While using only instances that are part of the problem domain worked better on similar attack set sizes, finding instances that are not part of the problem domain is an easier task in general and still works pretty well. Taking this into consideration, in case that the number of queries on can make to the blackbox is severely limited or run time is an important factor, one should rely mainly on problem domain instances. Should this not be the case non-problem domain instances allow for a quick assembly of a large data set that can extract a model reasonably well.
 
-
-\bibliographystyle{abbrv}
-\bibliography{literature}
+\printbibliography
 
 \end{document}
