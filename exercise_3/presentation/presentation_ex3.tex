@@ -83,6 +83,7 @@
     \item Accuracy of Azure on labeled data roughly $0.76$
     \item attack set: starting with $2000$ up to $13961$
     \item Test set: $4654$
+    \item one hour including queries
 \end{itemize}
 \end{frame}
 \begin{frame}[fragile]{Evaluation}
@@ -101,4 +102,57 @@
             \end{figure}
         
 \end{frame}
+\subsection[Cats and dogs]{Cats and dogs}
+\begin{frame}[fragile]{Cats and dogs Model}
+\begin{itemize}
+\item CNN home trained on $25\,000$ images
+\item Accuracy: $0,821$
+\end{itemize}
+\end{frame}
+\begin{frame}[fragile]{Evaluation}
+                \begin{figure}[h!]
+            \centering
+            \begin{subfigure}[c]{0.49\textwidth}
+                \centering
+                \includegraphics[width=1\textwidth]{exercise_3/paper/images/Accuracy_copy_cat_domain.png}
+                \caption{Accuracy using only problem domain}
+                \label{fig:Accuracy_Cat_domain}
+            \end{subfigure}
+            \begin{subfigure}[c]{0.49\textwidth}
+                \centering
+                \includegraphics[width=1\textwidth]{exercise_3/paper/images/Accuracy_copy_cat.png}
+                \caption{Accuracy using mixed instances }
+                \label{fig:Accuracy_cat_mix}
+            \end{subfigure}
+            \caption{Accuracy of Copycat Attack on second data set}
+            \label{fig:accuracy_cat}
+        \end{figure}
+\end{frame}
+\begin{frame}[fragile]{Evaluation}
+       \begin{figure}[h!]
+            \centering
+            \begin{subfigure}[c]{0.49\textwidth}
+                \centering
+                \includegraphics[width=1\textwidth]{exercise_3/paper/images/Equality_copy_cat_domain.png}
+                \caption{Equality using only problem domain}
+                \label{fig:Equality_cat_domain}
+            \end{subfigure}
+            \begin{subfigure}[c]{0.49\textwidth}
+                \centering
+                \includegraphics[width=1\textwidth]{exercise_3/paper/images/Equality_copy_cat.png}
+                \caption{Equality using mixed instances}
+                \label{fig:Equality_cat_mix}
+            \end{subfigure}
+            \caption{Equality of Copycat Attack on second data set}
+            \label{fig:equality_cat}
+        \end{figure}
+\end{frame}
+\begin{frame}[fragile]{runtime}
+    \begin{figure}[h!]
+        \centering      \includegraphics[scale=0.4]{exercise_3/paper/images/Time_copy_cat.png}
+        \caption{Time needed to extract a model}
+        \label{fig:time_cat}
+    \end{figure}
+\end{frame}
+
 \end{document}
