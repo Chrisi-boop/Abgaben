@@ -59,22 +59,21 @@
     In the next step we will use the generated fake data set to fit the pre-trained model.
     As described in~\cite{copycat} we will use Stochastic Gradient Descent with a Step Down policy for the learning rate for training the copycat model. 
     
-    We carried out our experiments using an Intel Core i7 6700k with 16GB RAM and NVIDIA GeForce GTX 1070. The environment of the experiments was Arch Linux with NVIDIA CUDA Framework ... and cuDNN .... \todo{!}
-    %Paper: Intel Core i5-7500 3.40GHz with 32GiB of RAM and NVIDIA GeForce GTX 1070 with 8GiB of memory. The environment of the experiments was GNU/Linux Mint 18.1, with NVIDIA CUDA Framework 9.0 and cuDNN 7.0
+    We carried out our experiments using an Intel Core i7 6700k with 16GB RAM and NVIDIA GeForce GTX 1070. The environment of the experiments was Arch Linux with NVIDIA CUDA 10.2 and cuDNN 7.6.5.
     
     \subsection{Data Set: Emotion Detection}
         Unfortunately, we could not get access to the data sets used in~\cite{copycat} to compare our results with the results in the paper. Therefore, we used other data sets for our experiments. We combined two sets, which are described in the following two subsections to obtain a larger number of instances.
         %As our first data set we combined the data sets described in the following two subsections. 
         %Since KDEF and AKDEF were one of the used data sets in the paper of Correia-Silva et al. we wanted to take them as validation that we achieve similar results. Unfortunately, they contain only about 5\,000 samples in total and we could not get access to other data sets used in the paper. Therefore, we combined them with a larger data set.
         
-        \subsubsection{KDEF and AKDEF}
+        \subsubsection{KDEF and AKDEF} \label{subsec:dataset_KDEF-AKDEF}
             The Karolinska directed emotional faces data set~\cite{kdef} (short KDEF) contains 4\,900 images of human facial expressions. The pictures were taken of 70 different people (35 male and 35 female) displaying 7 different emotional expressions. All people portrayed were amateur actors between the ages of 20 and 30 and had no facial hair, glasses or makeup during the photos. Each of the expressions were taken from multiple different angles. 
             
             The averaged Karolinska directed emotional faces data set~\cite{kdef} (short AKDEF) contains $70$ averaged images of KDEF. The averaging was done over images containing the same gender, angle and emotional expression.
             
             Both data sets contain labels and were made by the Karolinska Institute in Stockholm, Sweden by the Department of Clinical Neuroscience in 1998. The data sets have been used in a large number of research publications on the topic. 
             
-        \subsubsection{Emotion Detection from Facial Expressions}
+        \subsubsection{Emotion Detection from Facial Expressions} \label{subsec:dataset_kaggle-emotions}
             This data set was taken from the Kaggle competition 'Emotion Detection From Facial Expressions'~\cite{kaggle-emotion}. 
             It contains 13\,690 images of several human faces with different emotions. The data set was constructed from a variety of different sources, e.g.
             \begin{itemize}
@@ -135,9 +134,9 @@
     \subsection{Evaluation of the extracted Emotion Detection model}
         Since we had labeled data, we were able to compute the accuracy of the Microsoft Azure Emotion API. On the whole data set we obtained an accuracy of $0.76$.
         
-        For testing the efficiency of our extracted model, we initially did a $75\%/25\%$ training/test split on our data set consisting of KDEF, AKDEF and the one from Kaggle. As we had labeled data, we had to delete the labels before querying the Azure API as a black-box. From now on we will refer to the split for training the extracted model as attack set, since this set will be used to attack the target network.
+        For testing the efficiency of our extracted model, we initially did a $75\%/25\%$ training/test split on our data set consisting of KDEF, AKDEF (see Subsection~\ref{subsec:dataset_KDEF-AKDEF}) and the one from Kaggle (see Subsection~\ref{subsec:dataset_kaggle-emotions}). As we had labeled data, we had to delete the labels before querying the Azure API as a black-box. From now on we will refer to the split for training the extracted model as attack set, since this set will be used to attack the target network.
         
-        To learn the effect of the number if images in the training set, we used an incremental approach. We trained the model on progressively larger subsets of the training set, which were included in each other. Starting with a random sample $s_0$ of $2\,000$ images, the next training set $s_n$ consisted of $s_{n-1}$ and additional $1\,000$ images.
+        To learn the effect of the number if images in the training set, we used an incremental approach. We trained the model on progressively larger subsets of the training set, which were included in each other. Starting with a random sample $s_0$ of $2\,000$ images, the next training set $s_n$ consisted of $s_{n-1}$ and additional $1\,000$ randomly selected images, which are not already contained in $s_{n-1}$.
         
         In order to compare the performance of our extracted models to the target network we considered two measures:
         \begin{itemize}
@@ -170,103 +169,161 @@
             \label{fig:performance-azure}
         \end{figure}
         
-        We took the offer for students and got $100$\$ of credit for free, which we used for the standard option. Therefore, we could label up to $10$ images per second. 
+        We took the offer for students and got $100$\$ of credit for free, which we used for the standard option. Therefore, we could label up to $10$ images per second but had to pay $0.01$\$ per $1\,000$ calls.
         
         Extracting a model using the whole data set took roughly one hour. About a third of this time was needed for training the model. The remaining time was for querying our target network for the labeling of our data set. 
         
         Using the free tier in Azure we would have needed about $16$ hours of time which is compared to the standard tier much longer, but still a reasonable timeframe. 
 
-    \subsection{Data Set: Cats vs. Dogs}
+    \subsection{Data Sets: Cats vs. Dogs}
         In the following we have a binary classification problem, where we want to predict if a certain image contains a cat or a dog. 
         
         For building a model we will again combine several data sets. First of all, we need a training set for training the target network. Additionally, we will need images for the attack resp. test set. 
         
-        \subsubsection{Dogs vs. Cats}
-            Instead of using an already existing API, in this experiment we chose to train our own CNN to steal to make matters more interesting. We obtained the training set for building our target model from the Kaggle competition 'Dogs vs. Cats'~\cite{dogs-cats}. It contains $25\,000$ images of cats and dogs including its labels.
+        \subsubsection{Dogs vs. Cats}\label{subsec:dataset_cats-dogs}
+            Instead of using an already existing API, in this experiment we chose to train our own CNN to steal to make matters more interesting. We obtained the training set for building our target model from the Kaggle competition 'Dogs vs. Cats'~\cite{dogs-cats}. It contains in total $25\,000$ images including its labels, where half of the images picture cats and the other half dogs.
             
             Additionally, this Kaggle competition provided another data set with $12\,500$ pictures of cats and dogs, but without labels, as the goal of the competition was to predict these labels. Since the attack set does not need any labeled data, we decided to use this set as part of the attack set.
             
-        \subsubsection{Cats}
+        \subsubsection{Cats} \label{subsec:dataset_cats}
             This data set is also from Kaggle~\cite{cats}. It contains roughly $10\,000$ images solely of cats in various positions. 
             In an additional file more information, like pointers to the eyes, ears and nose of the cats in the pictures, can be found. However we did not use them in any capacity. 
             
             We used this data set as part of the attack and test set. 
             
-        \subsubsection{Stanford dogs data set}
+        \subsubsection{Stanford dogs data set} \label{subsec:dataset_dogs}
             The Stanford dogs data set ~\cite{dogs} was built using images from ImageNet in order to help categorize images. It contains $20\,580$ pictures purely of dogs. Additionally, it contains also classification for different breeds of dogs, but once again we did not use this information in out attack. 
             
             In our experiment this data set was used in the attack and test set.
             
-        \subsubsection{Common objects in context data set}
+        \subsubsection{Common objects in context data set}\label{subsec:dataset-coco}
             Since we construct the target network in this experiment by ourselves, we can use the copycat attack to it's full power and include non-problem domain data in our attack set. 
-            For this we chose the COCO (Common Objects in Context) data set~\cite{coco}, which is known for object detection, segmentation and captioning. With a size of about $118\,000$ images it is a large data set. 
+            For this we chose the Microsoft COCO (Common Objects in Context) data set~\cite{coco}, which is known for object detection, segmentation and captioning. With a size of about $118\,000$ images it is a large data set. 
             
             These images will only be used in the attack set, since the classification problem is to decide if a picture shows a dog or a cat, but not to decide if it is something else. Moreover, since the images in this data set do not contain to our problem domain and compared to the number of our problem-domain data is much bigger, we decided not to use the whole data set. 
-            
-    \subsection{Evaluation of the extracted Cats vs. Dogs model}
-        We tested the accuracy of the set by mixing the cat data set and the Stanford dog data set and picking $7\,644$ random images out of it. The resulting accuracy was $0,821$.
-        
-        -------------------------------------------------------------------
-        
-        We extracted the model in two different ways. In one instance we used only images that are part of the domain, therefore pictures of cats and dogs, in the attack set. In the other instance we used a mixture of non-domain images and domain images in a $2$ to $5$ ratio, to let the original model confess its information. 
     
-        We start by looking at the accuracy of the extracted model in both cases:
-            \begin{figure}[h!]
+    \subsection{Target Network}
+        The targeted CNN was trained using the Dogs vs. Cats data set from Kaggle (see Subsection~\ref{subsec:dataset_cats-dogs}). We build a CNN consisting of 3 Convolutional layer blocks and a fully connected layer. In each Convolutional layer block we are applying
+        \begin{itemize}
+            \item 2D convolutions two times with a kernel size of 3 and padding value of 1,
+            \item Batch Normalisation,
+            \item ReLU as activation function,
+            \item Max Pooling with a kernel size of 2 and a stride of 2. 
+        \end{itemize}
+        In the fully connected layer we are applying the following methods several times:
+        \begin{itemize}
+            \item Dropout with $p=0.1$ (probability of an element to be zeroed),
+            \item linear transformation,
+            \item ReLU.
+        \end{itemize}
+       
+       We trained the target model for 10 epochs and using Stochastic Gradient Descent with a Step Down policy for the learning rate and CrossEntropyLoss as criterion. In the augmentation step we resized the images. 
+       
+       This model achieved an accuracy of $0,821$ on the test data set (see Subsection~\ref{subsec:evaluation-cats-dogs} for more detailed description and analysis). 
+       
+    \subsection{Evaluation of the extracted Cats vs. Dogs model}~\label{subsec:evaluation-cats-dogs}
+        As our test set we made a $25\%$ split on the Cats (see Subsection~\ref{subsec:dataset_cats}) and the Dogs (see Subsection~\ref{subsec:dataset_dogs}) data set. 
+        
+        We extracted the model in two different ways. First, we used only images that are part of the domain, therefore pictures of cats and dogs, in the attack set. For this we combined the remaining $75\%$ of the Cats and Dogs images with the unlabeled data of the Cats vs. Dogs data set (see Subsection~\ref{subsec:dataset_cats-dogs}). 
+        For evaluation we proceeded similarly to the Emotion Detection problem. We started with a random subset with $3\,000$ images as our attack set and extracted a model. Then we iteratively increased the size of the attack size by $3\,000$ images and in each step extracted another model until we used all of the available images for the model-stealing attack.
+        
+        Moreover, we also experimented also with a mixture of non-problem domain (short NPD) images and problem domain (short PD) images in the attack set. For this we added half of the COCO data set (see Subsection~\ref{subsec:dataset-coco}) to our attack set. The ratio between the PD and NPD instances in the total set was $2:5$.
+        The testing phase including NPD images was similar to the PD case. As we had much more images in this case, we started with an initial attack set of $5\,000$ images and increased its size in each step by $10\,000$ pictures.
+        
+        Our experiments had the following results. Figure~\ref{fig:accuracy_cat} shows the accuracy for each of the two approaches with increasing number of instances in the attack set. As we can see in the case, where only PD data is used to attack, there is a slight increase for larger attack sets from $0.632$ to $0.768$, but the difference is not very much. 
+        
+        Considering the second case in Figure~\ref{fig:accuracy_cat_PD+NPD}, where also NPD data is included, we can see that this looks similar to the other approach. The accuracy increases from $0.673$ to $0.791$.
+        
+        \begin{figure}[h!]
             \centering
             \begin{subfigure}[c]{0.49\textwidth}
-                \centering
-                \includegraphics[width=1\textwidth]{exercise_3/paper/images/Accuracy_copy_cat_domain.png}
-                \caption{Accuracy using only problem domain}
-                \label{fig:Accuracy_Cat_domain}
+                \centering                \includegraphics[width=1\textwidth]{exercise_3/paper/images/Accuracy_copy_cat_domain.png}
+                \caption{Accuracy using only PD data}
+                \label{fig:accuracy_cat_PD}
             \end{subfigure}
             \begin{subfigure}[c]{0.49\textwidth}
-                \centering
-                \includegraphics[width=1\textwidth]{exercise_3/paper/images/Accuracy_copy_cat.png}
-                \caption{Accuracy using mixed instances }
-                \label{fig:Accuracy_cat_mix}
+                \centering                \includegraphics[width=1\textwidth]{exercise_3/paper/images/Accuracy_copy_cat.png}
+                \caption{Accuracy including also NPD data}
+                \label{fig:accuracy_cat_PD+NPD}
             \end{subfigure}
             \caption{Accuracy of Copycat Attack on second data set}
             \label{fig:accuracy_cat}
         \end{figure}
-        It is visible, that in case of the attack set being of similar size the attack set consisting only of instances, that are part of the problem domain performed better. 
 
-        Looking at how much of the data our extracted model labeled the same as the original model, showed the same:
+        Furthermore, we will consider the equality of our extracted model. In Figure~\ref{fig:equality_cat} we can see that graph for both approaches looks very similar.
+        
          \begin{figure}[h!]
             \centering
             \begin{subfigure}[c]{0.49\textwidth}
-                \centering
-                \includegraphics[width=1\textwidth]{exercise_3/paper/images/Equality_copy_cat_domain.png}
-                \caption{Equality using only problem domain}
-                \label{fig:Equality_cat_domain}
+                \centering                \includegraphics[width=1\textwidth]{exercise_3/paper/images/Equality_copy_cat_domain.png}
+                \caption{Equality using only PD data}
+                \label{fig:Equality_cat_PD}
             \end{subfigure}
             \begin{subfigure}[c]{0.49\textwidth}
-                \centering
-                \includegraphics[width=1\textwidth]{exercise_3/paper/images/Equality_copy_cat.png}
-                \caption{Equality using mixed instances}
-                \label{fig:Equality_cat_mix}
+                \centering                \includegraphics[width=1\textwidth]{exercise_3/paper/images/Equality_copy_cat.png}
+                \caption{Equality including also NPD data}
+                \label{fig:equality_cat_PD+NPD}
             \end{subfigure}
             \caption{Equality of Copycat Attack on second data set}
             \label{fig:equality_cat}
         \end{figure}
-    Once again using only problem domain data performed better, when looking at attack sets of similar size.
+        
+        It is visible, that in case of the attack set being of similar size the attack set consisting only of instances, that are part of the problem domain performed better. 
+        
+        Once again using only problem domain data performed better, when looking at attack sets of similar size.
+        
+                %the number of instances in the attack set has more visible influence on the accuracy of the extracted model. The accuracy increases from $0.673$ to $0.791$. 
     
     The time needed to train the models grew roughly linearly with the size of the attack sets. The largest attack set of size $94\,572$ trained the extracted model in roughly $24$ minutes. Below is the time needed to construct the extracted model compared to the size of the attack set.
         \begin{figure}[h!]
-            \centering      \includegraphics[scale=0.2]{exercise_3/paper/images/Time_copy_cat.png}
+            \centering      \includegraphics[width=0.6\textwidth]{exercise_3/paper/images/Time_copy_cat.png}
             \caption{Time needed to extract a model}
             \label{fig:time_cat}
         \end{figure}
+        
+        
+        ------------------------------------------------------------------
+        
+        We tested the accuracy of the set by mixing the cat data set and the Stanford dog data set and picking $7\,644$ random images out of it. The resulting accuracy was $0,821$. 
             
 \section{Decision Tree Path-Finding Attack}
-    As the name suggests, this model extraction method targets decision tree models. Such a model divides the input space into several discrete partitions. The idea behind the decision tree path-finding attack is to vary the values of each feature bit by bit to find the value at which the tree splits.
+    As the name suggests this model stealing attack targets decision tree models. Such a model divides the input space into several discrete partitions. The idea behind the decision tree path-finding attack is to vary the values of each feature bit by bit to find the value at which the tree splits. Algorithm~\ref{alg:DT-attack} you can find a rough sketch of this attack. In this pseudocode let $Q$ be the set of unprocessed queries and $P$ the set of explored leaves with their classification.
     
-    
+    \begin{algorithm}
+        \caption{Path-finding attack for decision trees}
+	    \begin{algorithmic}[1]
+%		    \State Let $Q$ be the set of unprocessed queries;
+%		    \State Let $P$ be the set of explored leaves with their classification;
+		    \State Add a random first query to $x_{init}$ to $Q$;
+		    \State While $Q\neq\emptyset$ process $x\in Q$;
+		    \State Do binary search over the continous features and check whether a new leaf can be discovered;
+		    \State in this way explore the continuous features and variate the discrete features to find all leaves;
+	    \end{algorithmic}
+	    \label{alg:DT-attack}
+    \end{algorithm}
+    A weakness of this approach is that if two instances that lead to different leaves that are classified as the same, only differ in a single feature, the difference may not be registered in the extracted model.
     
     We carried out our experiments using GCP e2-highmem-16 offered by the Google Cloud Platform running on Ubuntu 20.04.
     
-    \subsection{Data Set}
-        ...
+    \subsection{Models}
+        Since this extraction method does not use data sets to get the model to confess its knowledge, we instead look at publicly available decision tree models from bigml which we are looking to extract.
+        \subsubsection{US IRS 2008 tax data patterns}
+        https://bigml.com/user/francisco/gallery/model/50c008bb3b56351981000375
+        This decision tree was generated using data from tax returns filed in the US in 2009. The decision tree aims to predict the home state of the tax payer.
+        \subsubsection{Steak survey}
+        https://bigml.com/user/ashikiar/gallery/model/537be4c3d9949779990041e9
+        This model was based on data from a \hyperlink{https://fivethirtyeight.com/features/how-americans-like-their-steak/}{FiveThirtyEighty survey}, which asked a lot of general questions as well as how they liked their steak prepared (Rare, Medium-rare, Medium, Medium-well, Well). 
+        \subsubsection{Bitcoin price} 
+        https://bigml.com/user/czuriaga/gallery/model/51ccb90a035d07603900039e
+        Was macht der TREEEE?????
+        \subsubsection{Email Importance}
+        https://bigml.com/user/louisdorard/gallery/model/52fa8aa60c0b5e6d4a0030c1
         
+        This model was built using Email data collected from the users own inbox. The importance was set by Gmail. Using a variety of features including length of the mail and whether the mail was sent by a contact, the tree classifies the importance.
+        \subsubsection{gss survey}
+        Find das model ned
+        \subsubsection{med price}
+        Find ich ned
     \subsection{Evaluation}
         ...
 
